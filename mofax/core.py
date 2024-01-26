@@ -852,7 +852,6 @@ Expectations: {', '.join(self.expectations.keys())}"""
 
         # multiple views provided as an iterable
         elif isinstance(views, Iterable) and not isinstance(views, str):
-
             # (to-do) check that all elements are of the same type
 
             # iterable of booleans
@@ -865,7 +864,9 @@ Expectations: {', '.join(self.expectations.keys())}"""
                 views = [self.views[m] if isinstance(m, int) else m for m in views]
             # iterable of strings
             elif all([isinstance(m, str) for m in views]):
-                assert set(views).issubset(
+                assert set(
+                    views
+                ).issubset(
                     set(self.views)
                 ), f"some of the elements of the 'views' are not valid views. Views names of this model are {', '.join(self.views)}."
             else:
@@ -890,7 +891,6 @@ Expectations: {', '.join(self.expectations.keys())}"""
 
         # multiple groups provided as an iterable
         elif isinstance(groups, Iterable) and not isinstance(groups, str):
-
             # (to-do) check that all elements are of the same type
 
             # iterable of booleans
@@ -903,7 +903,9 @@ Expectations: {', '.join(self.expectations.keys())}"""
                 groups = [self.groups[g] if isinstance(g, int) else g for g in groups]
             # iterable of strings
             elif all([isinstance(g, str) for g in groups]):
-                assert set(groups).issubset(
+                assert set(
+                    groups
+                ).issubset(
                     set(self.groups)
                 ), f"some of the elements of the 'groups' are not valid groups. Group names of this model are {', '.join(self.groups)}."
             else:
@@ -1015,13 +1017,20 @@ Expectations: {', '.join(self.expectations.keys())}"""
                                 ),
                                 Y=np.array(self.data[view][group]),
                             )
-                            r2_df = r2_df.append(
-                                {
-                                    "View": view,
-                                    "Group": group,
-                                    "R2": r2,
-                                    "Factor": factor_name,
-                                },
+                            r2_df = pd.concat(
+                                [
+                                    r2_df,
+                                    pd.DataFrame(
+                                        [
+                                            {
+                                                "View": view,
+                                                "Group": group,
+                                                "R2": r2,
+                                                "Factor": factor_name,
+                                            }
+                                        ]
+                                    ),
+                                ],
                                 ignore_index=True,
                             )
                     else:
@@ -1032,8 +1041,14 @@ Expectations: {', '.join(self.expectations.keys())}"""
                             W=np.array(self.expectations["W"][view][factor_indices, :]),
                             Y=np.array(self.data[view][group]),
                         )
-                        r2_df = r2_df.append(
-                            {"View": view, "Group": group, "R2": r2}, ignore_index=True
+                        r2_df = pd.concat(
+                            [
+                                r2_df,
+                                pd.DataFrame(
+                                    [{"View": view, "Group": group, "R2": r2}]
+                                ),
+                            ],
+                            ignore_index=True,
                         )
 
         # use custom groups
@@ -1053,7 +1068,6 @@ Expectations: {', '.join(self.expectations.keys())}"""
             del z
 
             for view in views:
-
                 y_view = np.concatenate(
                     [self.data[view][group][:, :] for group in groups], axis=0
                 )
@@ -1073,13 +1087,20 @@ Expectations: {', '.join(self.expectations.keys())}"""
                                 ),
                                 Y=np.array(data_view[group]),
                             )
-                            r2_df = r2_df.append(
-                                {
-                                    "View": view,
-                                    "Group": group,
-                                    "R2": r2,
-                                    "Factor": factor_name,
-                                },
+                            r2_df = pd.concat(
+                                [
+                                    r2_df,
+                                    pd.DataFrame(
+                                        [
+                                            {
+                                                "View": view,
+                                                "Group": group,
+                                                "R2": r2,
+                                                "Factor": factor_name,
+                                            }
+                                        ]
+                                    ),
+                                ],
                                 ignore_index=True,
                             )
                     else:
@@ -1088,8 +1109,14 @@ Expectations: {', '.join(self.expectations.keys())}"""
                             W=np.array(self.expectations["W"][view][factor_indices, :]),
                             Y=np.array(data_view[group]),
                         )
-                        r2_df = r2_df.append(
-                            {"View": view, "Group": group, "R2": r2}, ignore_index=True
+                        r2_df = pd.concat(
+                            [
+                                r2_df,
+                                pd.DataFrame(
+                                    [{"View": view, "Group": group, "R2": r2}]
+                                ),
+                            ],
+                            ignore_index=True,
                         )
         return r2_df
 
@@ -1134,7 +1161,6 @@ Expectations: {', '.join(self.expectations.keys())}"""
             r2 = r2[r2.Factor.isin(factors)]
         # Recalculate if not pre-computed
         else:
-
             r2 = pd.DataFrame()
             factor_indices, _ = self._check_factors(factors)
             for k in factor_indices:
@@ -1238,7 +1264,6 @@ Expectations: {', '.join(self.expectations.keys())}"""
                 z_custom[group] = z[:, np.where(groups_df.iloc[:, 0] == group)[0]]
 
             for view in self.views:
-
                 y_view = np.concatenate(
                     [self.data[view][group][:, :] for group in self.groups], axis=0
                 )
@@ -1255,15 +1280,15 @@ Expectations: {', '.join(self.expectations.keys())}"""
                     )
                     y = np.array(data_view[group])
                     a = np.sum((y - crossprod) ** 2)
-                    b = np.sum(y ** 2)
-                    r2_df = r2_df.append(
-                        {
+                    b = np.sum(y**2)
+                    r2_df = pd.concat([r2_df, pd.DataFrame(
+                        [{
                             "View": view,
                             "Group": group,
                             "Factor": f"Factor{factor_index+1}",
                             "R2": 1 - a / b,
                             "Iteration": i,
-                        },
+                        }])],
                         ignore_index=True,
                     )
 
@@ -1342,7 +1367,7 @@ Expectations: {', '.join(self.expectations.keys())}"""
                 )
                 y = np.array(self.data[view][group])
                 a = np.nansum((y - crossprod) ** 2.0, axis=1)
-                b = np.nansum(y ** 2, axis=1)
+                b = np.nansum(y**2, axis=1)
 
                 r2_df_mg = pd.DataFrame(
                     {

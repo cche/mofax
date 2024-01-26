@@ -1,21 +1,12 @@
 from .core import mofa_model
 from .utils import *
 
-import sys
-from warnings import warn
-from typing import Union, Optional, List, Iterable, Sequence
-from functools import partial
+from typing import Union, List
 
-import numpy as np
-from scipy.stats import pearsonr
 import pandas as pd
-from pandas.api.types import is_numeric_dtype
 import matplotlib.pyplot as plt
-from matplotlib import rcParams
 import seaborn as sns
 
-from .utils import maybe_factor_indices_to_factors, _make_iterable, _is_iter
-from .plot_utils import _plot_grid
 
 
 ### VARIANCE EXPLAINED ###
@@ -25,9 +16,9 @@ def plot_r2(
     model: mofa_model,
     x="Group",
     y="Factor",
-    factors: Union[int, List[int], str, List[str]] = None,
-    groups_df: pd.DataFrame = None,
-    group_label: str = None,
+    factors: Union[int, List[int], str, List[str], None] = None,
+    groups_df: pd.DataFrame | None = None,
+    group_label: str | None = None,
     views=None,
     groups=None,
     cmap="Blues",
@@ -69,6 +60,7 @@ def plot_r2(
         views=views,
         group_label=group_label,
         groups_df=groups_df,
+        per_factor=True,
     )
 
     vmax = r2.R2.max() if vmax is None else vmax
